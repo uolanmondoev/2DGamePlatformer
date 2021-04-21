@@ -41,26 +41,26 @@ blue = (0, 0, 255)
 
 
 #load images
-bg_img = pygame.image.load('img/background.png')
+bg_img = pygame.image.load('data/img/background.png')
 #sun_img = pygame.image.load('')
-restart_image = pygame.image.load('img/restart_btn.png')
+restart_image = pygame.image.load('data/img/restart_btn.png')
 restart_image = pygame.transform.scale(restart_image, (tile_size * 4, tile_size * 2))
-start_image = pygame.image.load('img/start_btn.png')
+start_image = pygame.image.load('data/img/start_btn.png')
 start_image = pygame.transform.scale(start_image, (tile_size * 4, tile_size * 2))
-exit_image = pygame.image.load('img/exit_btn.png')
+exit_image = pygame.image.load('data/img/exit_btn.png')
 exit_image = pygame.transform.scale(exit_image, (tile_size * 4, tile_size * 2))
 
 
 #load sounds
-main_theme = pygame.mixer.Sound("sounds/music.mp3")
+main_theme = pygame.mixer.Sound("data/sounds/music.mp3")
 main_theme.set_volume(0.2)
-coin_fx = pygame.mixer.Sound("sounds/coin.mp3")
+coin_fx = pygame.mixer.Sound("data/sounds/coin.mp3")
 coin_fx.set_volume(0.5)
-jump_fx = pygame.mixer.Sound("sounds/jump.mp3")
+jump_fx = pygame.mixer.Sound("data/sounds/jump.mp3")
 jump_fx.set_volume(0.5)
-game_over_fx = pygame.mixer.Sound("sounds/game_over.mp3")
+game_over_fx = pygame.mixer.Sound("data/sounds/game_over.mp3")
 game_over_fx.set_volume(0.5)
-victory_fx = pygame.mixer.Sound("sounds/victory.mp3")
+victory_fx = pygame.mixer.Sound("data/sounds/victory.mp3")
 victory_fx.set_volume(0.5)
 
 
@@ -81,8 +81,8 @@ def reset_level(level):
 	exit_group.empty()
 
 	#load in level data and create world
-	if path.exists(f'level{level}_data'):
-		pickle_in = open(f'level{level}_data', 'rb')
+	if path.exists(f'data/level{level}_data'):
+		pickle_in = open(f'data/level{level}_data', 'rb')
 		world_data = pickle.load(pickle_in)
 	world = World(world_data)
 
@@ -138,10 +138,11 @@ class Player():
 		if game_over == 0:
 			#get keypresses
 			key = pygame.key.get_pressed()
-			if key[pygame.K_SPACE] and self.jumped == False and self.in_air == False:
+			if key[pygame.K_SPACE] and self.jumped == False and self.jumpTime < 2:
 				jump_fx.play()
-				self.vel_y = -15 
-				self.jumped =True
+				self.vel_y = -13 
+				self.jumpTime += 1
+				self.jumped = True
 			if key[pygame.K_SPACE] == False:
 				self.jumped = False
 			if key[pygame.K_LEFT]:
@@ -159,6 +160,8 @@ class Player():
 					self.image = self.images_right[self.index]
 				if self.direction == -1:
 					self.image = self.images_left[self.index]
+			#if key[pygame.K_Enter] == False:
+
 				
 
 
@@ -198,6 +201,7 @@ class Player():
 						dy = tile[1].top - self.rect.bottom
 						self.vel_y = 0
 						self.in_air = False
+						self.jumpTime = 0
 
 			#check for collision with enemies
 			if pygame.sprite.spritecollide(self, zombie_group, False):
@@ -212,6 +216,8 @@ class Player():
 			#check for collision with exit
 			if pygame.sprite.spritecollide(self, exit_group, False):
 				game_over = 1
+
+
 
 
 			#update player coordinates
@@ -238,14 +244,14 @@ class Player():
 		self.index = 0
 		self.counter = 0
 		for num in range(1, 4):
-			img_right = pygame.image.load(f'img/guy{num}.png')
+			img_right = pygame.image.load(f'data/img/guy{num}.png')
 			img_right = pygame.transform.scale(img_right, (40, 80))
 			img_left = pygame.transform.flip(img_right, True, False)
 			self.images_right.append(img_right)
 			self.images_left.append(img_left)
 
 		self.image = self.images_right[self.index]
-		self.dead_image = pygame.image.load('img/ghost.png')
+		self.dead_image = pygame.image.load('data/img/ghost.png')
 		self.dead_image = pygame.transform.scale(self.dead_image, (tile_size, tile_size))
 
 		self.rect = self.image.get_rect()
@@ -254,9 +260,11 @@ class Player():
 		self.width = self.image.get_width()
 		self.height = self.image.get_height()
 		self.vel_y = 0
-		self.jumped = False
+		self.jumped = 0
+		self.jumpTime = 0 
 		self.direction = 0
 		self.in_air = True
+
 
 
 
@@ -266,8 +274,8 @@ class World():
 		self.tile_list = []
 
 		#load images
-		dirt_img = pygame.image.load('img/dirt.png')
-		grass_img = pygame.image.load('img/grass.png')
+		dirt_img = pygame.image.load('data/img/dirt.png')
+		grass_img = pygame.image.load('data/img/grass.png')
 
 		row_count = 0
 		for row in data:
@@ -313,7 +321,7 @@ class World():
 class Enemy(pygame.sprite.Sprite):
 	def __init__(self, x ,y):
 		pygame.sprite.Sprite.__init__(self)
-		self.image = pygame.image.load('img/zombie.png')
+		self.image = pygame.image.load('data/img/zombie.png')
 		self.image = pygame.transform.flip(self.image, True, False)
 		self.image = pygame.transform.scale(self.image, (tile_size, tile_size))
 		self.rect = self.image.get_rect()
@@ -337,7 +345,7 @@ class Enemy(pygame.sprite.Sprite):
 class Lava(pygame.sprite.Sprite):
 	def __init__(self, x ,y):
 		pygame.sprite.Sprite.__init__(self)
-		self.image = pygame.image.load('img/lava.png')
+		self.image = pygame.image.load('data/img/lava.png')
 		self.image = pygame.transform.scale(self.image, (tile_size, tile_size // 2))
 		self.rect = self.image.get_rect()
 		self.rect.x = x
@@ -346,7 +354,7 @@ class Lava(pygame.sprite.Sprite):
 class Coin(pygame.sprite.Sprite):
 	def __init__(self, x ,y):
 		pygame.sprite.Sprite.__init__(self)
-		self.image = pygame.image.load('img/coin.png')
+		self.image = pygame.image.load('data/img/coin.png')
 		self.image = pygame.transform.scale(self.image, (tile_size // 2, tile_size // 2))
 		self.rect = self.image.get_rect()
 		self.rect.center = (x, y)
@@ -354,7 +362,7 @@ class Coin(pygame.sprite.Sprite):
 class Exit(pygame.sprite.Sprite):
 	def __init__(self, x ,y):
 		pygame.sprite.Sprite.__init__(self)
-		self.image = pygame.image.load('img/exit.png')
+		self.image = pygame.image.load('data/img/exit.png')
 		self.image = pygame.transform.scale(self.image, (tile_size, int(tile_size * 1.5)))
 		self.rect = self.image.get_rect()
 		self.rect.x = x
@@ -375,8 +383,8 @@ coin_group.add(score_coin)
 
 
 #load in level datat and create world
-if path.exists(f'level{level}_data'):
-	pickle_in = open(f'level{level}_data', 'rb')
+if path.exists(f'data/level{level}_data'):
+	pickle_in = open(f'data/level{level}_data', 'rb')
 	world_data = pickle.load(pickle_in)
 world = World(world_data)
 
